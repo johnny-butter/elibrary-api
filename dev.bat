@@ -7,4 +7,4 @@ docker run -it --rm ^
   --net host ^
   elibrary_api_dev
 
-@REM python manage.py runserver 0.0.0.0:8000
+@REM python manage.py runserver_plus --print-sql 0.0.0.0:8000
