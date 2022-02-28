@@ -25,6 +25,17 @@ env = environ.Env(
     DB_PASSWORD=(str, ''),
     DB_HOST=(str, '127.0.0.1'),
     DB_PORT=(str, '3306'),
+
+    OAUTH_REDIRECT_URI=(str, ''),
+
+    OAUTH_GOOGLE_CLIEN_ID=(str, ''),
+    OAUTH_GOOGLE_CLIEN_SECRET=(str, ''),
+
+    OAUTH_FB_CLIEN_ID=(str, ''),
+    OAUTH_FB_CLIEN_SECRET=(str, ''),
+
+    OAUTH_LINE_CLIEN_ID=(str, ''),
+    OAUTH_LINE_CLIEN_SECRET=(str, ''),
 )
 
 # read .env file
@@ -128,6 +139,19 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+
+# OAuth
+OAUTH_REDIRECT_URI = env('OAUTH_REDIRECT_URI')
+
+OAUTH_GOOGLE_CLIEN_ID = env('OAUTH_GOOGLE_CLIEN_ID')
+OAUTH_GOOGLE_CLIEN_SECRET = env('OAUTH_GOOGLE_CLIEN_SECRET')
+
+OAUTH_FB_CLIEN_ID = env('OAUTH_FB_CLIEN_ID')
+OAUTH_FB_CLIEN_SECRET = env('OAUTH_FB_CLIEN_SECRET')
+
+OAUTH_LINE_CLIEN_ID = env('OAUTH_LINE_CLIEN_ID')
+OAUTH_LINE_CLIEN_SECRET = env('OAUTH_LINE_CLIEN_SECRET')
 
 
 # Internationalization
