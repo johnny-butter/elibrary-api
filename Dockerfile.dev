@@ -1,5 +1,7 @@
 FROM python:3.10.1-bullseye
 
+RUN pip install flake8
+
 COPY ./requirements.txt requirements.txt
 
 RUN pip install -r requirements.txt
