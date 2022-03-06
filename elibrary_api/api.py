@@ -3,6 +3,7 @@ from ninja import NinjaAPI
 from errors import APIException
 
 from users.api import router as users_router
+from books.api import router as books_router
 
 
 api = NinjaAPI(title='eLibraryAPI', version='1')
@@ -14,3 +15,4 @@ def service_unavailable(request, exc):
 
 
 api.add_router('/users/', users_router, tags=['users'])
+api.add_router('/books/', books_router, tags=['books'])

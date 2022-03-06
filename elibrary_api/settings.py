@@ -26,6 +26,8 @@ env = environ.Env(
     DB_HOST=(str, '127.0.0.1'),
     DB_PORT=(str, '3306'),
 
+    CACHE_LOCATION=(str, ''),
+
     OAUTH_REDIRECT_URI=(str, ''),
 
     OAUTH_GOOGLE_CLIEN_ID=(str, ''),
@@ -71,6 +73,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'django_extensions',
     'users',
+    'books',
 ]
 
 MIDDLEWARE = [
@@ -116,6 +119,16 @@ DATABASES = {
         'PASSWORD': env('DB_PASSWORD'),
         'HOST': env('DB_HOST'),
         'PORT': env('DB_PORT'),
+    }
+}
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': env('CACHE_LOCATION'),
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
     }
 }
 
