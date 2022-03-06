@@ -18,13 +18,11 @@ class OauthStrategy:
         if not self.get_access_token or not self.get_user_info:
             raise ValueError(f'please check whether the oauth_type({oauth_type}) is supported')
 
-
     def auth(self, code: str) -> OauthedUser:
         access_token = self.get_access_token(code)
         authed_user = self.get_user_info(access_token)
 
         return authed_user
-
 
     def _google_get_access_token(self, code: str) -> str:
         # https://developers.google.com/identity/protocols/oauth2/web-server#httprest
@@ -46,7 +44,6 @@ class OauthStrategy:
 
         return access_token
 
-
     def _google_get_user_info(self, access_tokrn: str) -> OauthedUser:
         # https://developers.google.com/people/api/rest/v1/people/get
         headers = {'Authorization': f'Bearer {access_tokrn}'}
@@ -62,7 +59,6 @@ class OauthStrategy:
             user_id=data['emailAddresses'][0]['metadata']['source']['id'],
             email=data['emailAddresses'][0]['value'],
         )
-
 
     def _fb_get_access_token(self, code: str) -> str:
         # https://developers.facebook.com/docs/facebook-login/manually-build-a-login-flow
@@ -81,7 +77,6 @@ class OauthStrategy:
         access_token = data['access_token']
 
         return access_token
-
 
     def _fb_get_user_info(self, access_tokrn: str) -> OauthedUser:
         # https://developers.facebook.com/docs/graph-api/overview/

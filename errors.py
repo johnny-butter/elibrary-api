@@ -12,7 +12,6 @@ class APIException(Exception):
         if message:
             self.message = message
 
-
     def get_message(self) -> str:
         return {'error_message': self.message}
 

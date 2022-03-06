@@ -18,6 +18,7 @@ from .schemas import AuthIn, AuthOut, UserIn, UserOut, RegisterUserIn
 
 router = Router()
 
+
 @router.post("/auth", response=AuthOut)
 def auth(request, payload: AuthIn):
     user = None
@@ -53,12 +54,12 @@ def create_user(request, payload: RegisterUserIn):
 
         with transaction.atomic():
             oauth_record = OauthRecord.objects.create(
-                oauth_type = payload.oauth_type,
-                oauth_id = oauthed_user.user_id,
-                user = User.objects.create(
-                    username = User.get_random_username(),
-                    password = '',
-                    email = oauthed_user.email,
+                oauth_type=payload.oauth_type,
+                oauth_id=oauthed_user.user_id,
+                user=User.objects.create(
+                    username=User.get_random_username(),
+                    password='',
+                    email=oauthed_user.email,
                 ),
             )
 

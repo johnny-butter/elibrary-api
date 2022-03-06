@@ -5,6 +5,7 @@ django-environ==0.8.1
 mysqlclient==2.1.0
 pyjwt==2.3.0
 requests==2.27.1
+django-redis==5.2.0
 
 # debug
 ipdb
