@@ -16,3 +16,9 @@ class Book(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class CollectdBook(models.Model):
+    book = models.ForeignKey('Book', models.CASCADE)
+    user = models.ForeignKey('users.User', models.CASCADE)
+    is_collected = models.BooleanField(default=True)
