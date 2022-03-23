@@ -5,6 +5,8 @@ from .models import Book
 
 
 class BookOut(ModelSchema):
+    id: int
+
     class Config:
         model = Book
         model_exclude = ['created_at', 'updated_at']

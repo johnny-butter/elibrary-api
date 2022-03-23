@@ -1,11 +1,15 @@
+import math
+
 from typing import List
 
 from ninja import Router, Schema
 from ninja.pagination import paginate, PaginationBase
 
 from django.core.cache import cache
+from django.db import models
+
 from .models import Book, CollectdBook
-from .schemas import PaginatedBooksOut
+from .schemas import BookOut, PaginatedBooksOut
 
 from services.auth_service import AuthJWT
 
@@ -17,14 +21,13 @@ class PagePagination(PaginationBase):
 
     # **kwargs: kwargs that will contain all the arguments that decorated function received
     # (to access pagination input get params["pagination"] - it will be a validated instance of your Input class)
-    def paginate_queryset(self, items, request, **kwargs):
+    def paginate_queryset(self, items: models.QuerySet, request, **kwargs):
         pagination_input = kwargs['pagination']
 
         page = pagination_input.page
         page_size = pagination_input.page_size
 
         cache_key = f'books_p{page}_s{page_size}'
-
         ret = cache.get(cache_key)
 
         if not ret:
@@ -32,9 +35,20 @@ class PagePagination(PaginationBase):
             cache.add(cache_key, ret, 5 * 60)
 
         return {
-            'total_pages': 999,
+            'total_pages': math.ceil(self._get_books_count(items) / page_size),
             'data': ret,
         }
+
+    def _get_books_count(self, query_set: models.QuerySet) -> int:
+        cache_key = 'books_total_count'
+
+        ret = cache.get(cache_key)
+
+        if not ret:
+            ret = query_set.count()
+            cache.add(cache_key, ret, 5 * 60)
+
+        return ret
 
 
 router = Router()
@@ -59,8 +73,15 @@ def collect_book(request, book_id: int):
     return 204, None
 
 
-@router.get("/collected", response=List[int], auth=AuthJWT())
+@router.get('/collected', response=List[BookOut], auth=AuthJWT())
 def collected_books(request):
-    collected_books = CollectdBook.objects.filter(user_id=request.auth['user_id'], is_collected=True)
+    collected_books_ids = CollectdBook.books. \
+        user_collected(request.auth['user_id']). \
+        values_list('book_id', flat=True)
 
-    return [collected_book.book_id for collected_book in collected_books]
+    return Book.objects.filter(id__in=collected_books_ids)
+
+
+@router.get('/collected_ids', response=List[int], auth=AuthJWT())
+def collected_books_ids(request):
+    return CollectdBook.books.user_collected(request.auth['user_id']).values_list('book_id', flat=True)
