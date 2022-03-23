@@ -18,7 +18,14 @@ class Book(models.Model):
         return self.name
 
 
+class CollectdBookQuerySet(models.QuerySet):
+    def user_collected(self, user_id: int):
+        return self.filter(user_id=user_id, is_collected=True)
+
+
 class CollectdBook(models.Model):
     book = models.ForeignKey('Book', models.CASCADE)
     user = models.ForeignKey('users.User', models.CASCADE)
     is_collected = models.BooleanField(default=True)
+
+    books = CollectdBookQuerySet.as_manager()
