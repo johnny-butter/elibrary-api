@@ -60,15 +60,16 @@ def create_user(request, payload: RegisterUserIn):
                     username=User.get_random_username(),
                     password='',
                     email=oauthed_user.email,
+                    is_staff=False,
                 ),
             )
-
             user = oauth_record.user
     else:
         password = payload.dict().pop('password')
 
         user = User.objects.create(**payload.dict(exclude={'oauth_type', 'oauth_code'}))
         user.set_password(password)
+        user.is_staff = False
         user.save()
 
     if user is None:
