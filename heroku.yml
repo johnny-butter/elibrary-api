@@ -1,0 +1,11 @@
+build:
+  docker:
+    web: Dockerfile
+
+release:
+  image: web
+  command:
+    - python manage.py migrate
+
+run:
+  web: gunicorn elibrary_api.wsgi:application --timeout=30 --workers=4 --bind 0.0.0.0:$PORT

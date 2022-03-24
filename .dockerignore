@@ -1,0 +1,14 @@
+.git/
+.vscode/
+
+**/__pycache__/
+**/.env
+
+*.dev
+*.bat
+
+Dockerfile*
+
+README.md
+
+heroku.yml
