@@ -15,3 +15,6 @@ factory_boy==3.2.1
 ipdb
 django_extensions==3.1.5
 Werkzeug==2.0.2
+
+# production
+gunicorn==20.1.0
