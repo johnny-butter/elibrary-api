@@ -4,6 +4,7 @@ from django.utils import timezone
 
 class Book(models.Model):
     name = models.CharField(max_length=128)
+    image_url = models.URLField(null=True)
     type = models.CharField(blank=True, null=True, max_length=128)
     author = models.CharField(blank=True, null=True, max_length=128)
     publisher = models.CharField(blank=True, null=True, max_length=128)
