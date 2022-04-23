@@ -29,6 +29,25 @@ class Order(models.Model):
     total_price = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(default=timezone.now)
 
+    @transition(
+        field=state,
+        source=[OrderState.Init, OrderState.Failed],
+        target=OrderState.Paid,
+        on_error=OrderState.Failed)
+    def pay(self, payment_method_nonce: str = ''):
+        if self.payment_type == PaymentType.CreditCard:
+            braintree_service.submit_for_settlement(Decimal(self.total_price), payment_method_nonce)
+
+        elif self.payment_type == PaymentType.Transfer:
+            pass
+
+    @transition(
+        field=state,
+        source=[OrderState.Init, OrderState.Failed],
+        target=OrderState.Canceled)
+    def cancel(self):
+        pass
+
 
 class OrderedItem(models.Model):
     order = models.ForeignKey('Order', models.CASCADE)
