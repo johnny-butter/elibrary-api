@@ -2,7 +2,8 @@ import threading
 
 from django.test import TestCase, TransactionTestCase, Client
 
-from .models import Cart, Order
+from .models import Cart
+from orders.models import Order
 
 from .factories import CartFactory
 from users.factories import UserFactory
@@ -144,7 +145,10 @@ class TestCartApi(TestCase):
 
         cart_item = CartFactory(user=self.user, book=book, amount=3)
 
-        resp = self.authed_client.post(f'{CARTS_ENDPOINT_PREFIX}/checkout', content_type='application/json')
+        resp = self.authed_client.post(
+            f'{CARTS_ENDPOINT_PREFIX}/checkout',
+            {'payment_type': 'CreditCard'},
+            content_type='application/json')
         resp_json = resp.json()
 
         order = Order.objects.get(id=resp_json['order_id'])

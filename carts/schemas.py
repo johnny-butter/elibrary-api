@@ -28,6 +28,10 @@ class DeleteCartIn(Schema):
     cart_id: int
 
 
+class CheckoutCartIn(Schema):
+    payment_type: str
+
+
 class OrderedItem(Schema):
     book: Book
     price: int = Field(..., alias='unit_price')
