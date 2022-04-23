@@ -5,27 +5,28 @@ from django.shortcuts import get_object_or_404
 
 from ninja import Router
 
-from .models import Cart, Order
+from .models import Cart
 from books.models import Book
+from orders.models import PaymentType, Order
 
-from .schemas import CartIn, CartOut, DeleteCartIn, CheckoutCartOut
+from .schemas import CartIn, CartOut, DeleteCartIn, CheckoutCartIn, CheckoutCartOut
 
 from errors import APIException
 
 from services.auth_service import AuthJWT
 
 
-router = Router()
+router = Router(auth=AuthJWT())
 
 
-@router.get('', response=CartOut, auth=AuthJWT())
+@router.get('', response=CartOut)
 def get_cart(request):
     query = Cart.objects.filter(user_id=request.auth['user_id']).select_related('book').all()
 
     return {'data': list(query)}
 
 
-@router.put('', response={204: None}, auth=AuthJWT())
+@router.put('', response={204: None})
 def put_cart(request, payload: CartIn):
     if payload.amount <= 0:
         raise APIException(message='amount can not le 0')
@@ -58,7 +59,7 @@ def put_cart(request, payload: CartIn):
     return 204, None
 
 
-@router.delete('', response={204: None}, auth=AuthJWT())
+@router.delete('', response={204: None})
 def delete_cart(request, payload: DeleteCartIn):
     cart_item = get_object_or_404(Cart, id=payload.cart_id)
 
@@ -71,12 +72,17 @@ def delete_cart(request, payload: DeleteCartIn):
     return 204, None
 
 
-@router.post('/checkout', response=CheckoutCartOut, auth=AuthJWT())
-def checkout_cart(request):
+@router.post('/checkout', response=CheckoutCartOut)
+def checkout_cart(request, payload: CheckoutCartIn):
     user_id = request.auth['user_id']
 
+    payment_type = vars(PaymentType).get(payload.payment_type)
+
+    if payment_type is None:
+        raise APIException(message=f'unsupport payment type {payload.payment_type}')
+
     with transaction.atomic():
-        order = Order.objects.create(user_id=user_id)
+        order = Order.objects.create(user_id=user_id, payment_type=payment_type)
 
         cart_items = Cart.objects.filter(user_id=user_id).all()
 
