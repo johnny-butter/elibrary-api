@@ -7,6 +7,7 @@ pyjwt==2.3.0
 requests==2.27.1
 django-redis==5.2.0
 django-fsm==2.8.0
+braintree==4.15.2
 
 # test
 factory_boy==3.2.1
