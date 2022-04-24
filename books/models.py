@@ -29,4 +29,5 @@ class CollectdBook(models.Model):
     user = models.ForeignKey('users.User', models.CASCADE)
     is_collected = models.BooleanField(default=True)
 
+    objects = models.Manager()
     books = CollectdBookQuerySet.as_manager()
