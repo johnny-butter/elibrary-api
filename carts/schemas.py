@@ -22,6 +22,7 @@ class CartItem(Schema):
 
 class CartOut(Schema):
     data: List[CartItem]
+    total_price: float
 
 
 class DeleteCartIn(Schema):

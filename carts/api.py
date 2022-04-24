@@ -21,9 +21,11 @@ router = Router(auth=AuthJWT())
 
 @router.get('', response=CartOut)
 def get_cart(request):
-    query = Cart.objects.filter(user_id=request.auth['user_id']).select_related('book').all()
+    items = Cart.objects.filter(user_id=request.auth['user_id']).select_related('book').all()
 
-    return {'data': list(query)}
+    total_price = sum([item.unit_price * item.amount for item in items])
+
+    return {'data': list(items), 'total_price': total_price}
 
 
 @router.put('', response={204: None})
