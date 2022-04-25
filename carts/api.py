@@ -7,7 +7,7 @@ from ninja import Router
 
 from .models import Cart
 from books.models import Book
-from orders.models import PaymentType, Order
+from orders.models import PaymentType, Order, OrderedItem
 
 from .schemas import CartIn, CartOut, DeleteCartIn, CheckoutCartIn, CheckoutCartOut
 
@@ -42,18 +42,19 @@ def put_cart(request, payload: CartIn):
             raise APIException(message='stock not enough')
 
         with transaction.atomic():
-            cart_item, is_created = Cart.objects.get_or_create(
-                user_id=request.auth['user_id'],
-                book=book,
-            )
+            try:
+                cart_item = Cart.objects.get(user_id=request.auth['user_id'], book=book)
+            except Cart.DoesNotExist:
+                if not payload.price:
+                    raise APIException(message='missing "price" param')
 
-            if is_created and not payload.price:
-                raise APIException(message='missing "price" param')
+                cart_item = Cart(
+                    user_id=request.auth['user_id'],
+                    book=book,
+                    unit_price=payload.price,
+                )
 
             Book.objects.filter(id=payload.book_id).update(stock=F('stock') + cart_item.amount - payload.amount)
-
-            if is_created:
-                cart_item.unit_price = payload.price
 
             cart_item.amount = payload.amount
             cart_item.save()
@@ -84,20 +85,23 @@ def checkout_cart(request, payload: CheckoutCartIn):
         raise APIException(message=f'unsupport payment type {payload.payment_type}')
 
     with transaction.atomic():
-        order = Order.objects.create(user_id=user_id, payment_type=payment_type)
-
         cart_items = Cart.objects.filter(user_id=user_id).all()
 
-        for cart_item in cart_items:
-            order.ordereditem_set.create(
+        order = Order.objects.create(
+            user_id=user_id,
+            payment_type=payment_type,
+            total_price=sum([cart_item.unit_price * cart_item.amount for cart_item in cart_items]),
+        )
+
+        OrderedItem.objects.bulk_create([
+            OrderedItem(
+                order=order,
                 book=cart_item.book,
                 unit_price=cart_item.unit_price,
                 amount=cart_item.amount,
-            )
+            ) for cart_item in cart_items
+        ])
 
-            order.total_price += cart_item.unit_price * cart_item.amount
-
-        order.save()
         cart_items.delete()
 
     return order
