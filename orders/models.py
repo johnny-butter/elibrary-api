@@ -26,7 +26,7 @@ class Order(models.Model):
     user = models.ForeignKey('users.User', models.RESTRICT)
     state = FSMIntegerField(default=OrderState.Init)
     payment_type = models.PositiveSmallIntegerField(default=PaymentType.CreditCard)
-    total_price = models.PositiveIntegerField(default=0)
+    total_price = models.DecimalField(decimal_places=2, max_digits=7)
     created_at = models.DateTimeField(default=timezone.now)
 
     @transition(
@@ -52,7 +52,7 @@ class Order(models.Model):
 class OrderedItem(models.Model):
     order = models.ForeignKey('Order', models.CASCADE)
     book = models.ForeignKey('books.Book', models.RESTRICT)
-    unit_price = models.PositiveIntegerField(default=0)
+    unit_price = models.DecimalField(decimal_places=2, max_digits=7)
     amount = models.PositiveIntegerField(default=0)
 
     class Meta:

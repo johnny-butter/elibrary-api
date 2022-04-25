@@ -1,5 +1,7 @@
 import threading
 
+from decimal import Decimal
+
 from django.test import TestCase, TransactionTestCase, Client
 
 from .models import Cart
@@ -155,8 +157,8 @@ class TestCartApi(TestCase):
         order_items = order.ordereditem_set.all()
 
         self.assertEqual(resp.status_code, 200)
-        self.assertEqual(resp_json['total_price'], order.total_price)
-        self.assertEqual(resp_json['items'][0]['price'], order_items.first().unit_price)
+        self.assertEqual(Decimal(resp_json['total_price']), order.total_price)
+        self.assertEqual(Decimal(resp_json['items'][0]['price']), order_items.first().unit_price)
         self.assertEqual(resp_json['items'][0]['amount'], order_items.first().amount)
         self.assertEqual(resp_json['items'][0]['book']['id'], book.id)
         self.assertEqual(Cart.objects.filter(user=self.user).count(), 0)
