@@ -9,14 +9,14 @@ class CartIn(Schema):
     amount: int
 
 
-class Book(Schema):
+class CartBook(Schema):
     id: int
     name: str
 
 
 class CartItem(Schema):
     id: int
-    book: Book
+    book: CartBook
     price: Decimal = Field(..., alias='unit_price')
     amount: int
 
@@ -34,8 +34,8 @@ class CheckoutCartIn(Schema):
     payment_type: str
 
 
-class OrderedItem(Schema):
-    book: Book
+class CartOrderedItem(Schema):
+    book: CartBook
     price: Decimal = Field(..., alias='unit_price')
     amount: int
 
@@ -43,4 +43,4 @@ class OrderedItem(Schema):
 class CheckoutCartOut(Schema):
     order_id: int = Field(..., alias='id')
     total_price: Decimal
-    items: List[OrderedItem] = Field(..., alias='ordereditem_set')
+    items: List[CartOrderedItem] = Field(..., alias='ordereditem_set')
