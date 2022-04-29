@@ -7,7 +7,7 @@ from ninja import Router
 
 from .models import Cart
 from books.models import Book
-from orders.models import PaymentType, Order, OrderedItem
+from orders.models import PaymentTypeChoices, Order, OrderedItem
 
 from .schemas import CartIn, CartOut, DeleteCartIn, CheckoutCartIn, CheckoutCartOut
 
@@ -79,9 +79,7 @@ def delete_cart(request, payload: DeleteCartIn):
 def checkout_cart(request, payload: CheckoutCartIn):
     user_id = request.auth['user_id']
 
-    payment_type = vars(PaymentType).get(payload.payment_type)
-
-    if payment_type is None:
+    if payload.payment_type not in PaymentTypeChoices.names:
         raise APIException(message=f'unsupport payment type {payload.payment_type}')
 
     with transaction.atomic():
@@ -89,7 +87,7 @@ def checkout_cart(request, payload: CheckoutCartIn):
 
         order = Order.objects.create(
             user_id=user_id,
-            payment_type=payment_type,
+            payment_type=PaymentTypeChoices[payload.payment_type],
             total_price=sum([cart_item.unit_price * cart_item.amount for cart_item in cart_items]),
         )
 

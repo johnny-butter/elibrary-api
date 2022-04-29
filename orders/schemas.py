@@ -22,6 +22,8 @@ class OrderedItem(Schema):
 
 class OrderOut(ModelSchema):
     id: int
+    state: str = Field(..., alias='state_name')
+    payment_type: str = Field(..., alias='payment_type_name')
     ordered_items: List[OrderedItem] = Field(..., alias='ordereditem_set')
 
     class Config:
