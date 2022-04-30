@@ -18,7 +18,9 @@ router = Router(auth=AuthJWT())
 
 @router.get('', response=List[OrderOut])
 def orders(request):
-    orders = Order.objects.filter(user_id=request.auth['user_id'])
+    orders = Order.objects \
+        .prefetch_related('ordereditem_set', 'ordereditem_set__book') \
+        .filter(user_id=request.auth['user_id'])
 
     return orders
 

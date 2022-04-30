@@ -33,10 +33,8 @@ def put_cart(request, payload: CartIn):
     if payload.amount <= 0:
         raise APIException(message='amount can not le 0')
 
-    book = get_object_or_404(Book, id=payload.book_id)
-
-    with cache.lock(f'cart_book_{book.id}'):
-        book.refresh_from_db()
+    with cache.lock(f'cart_book_{payload.book_id}'):
+        book = get_object_or_404(Book, id=payload.book_id)
 
         if book.stock < payload.amount:
             raise APIException(message='stock not enough')
@@ -83,7 +81,7 @@ def checkout_cart(request, payload: CheckoutCartIn):
         raise APIException(message=f'unsupport payment type {payload.payment_type}')
 
     with transaction.atomic():
-        cart_items = Cart.objects.filter(user_id=user_id).all()
+        cart_items = Cart.objects.select_related('book').filter(user_id=user_id).all()
 
         order = Order.objects.create(
             user_id=user_id,
@@ -101,5 +99,9 @@ def checkout_cart(request, payload: CheckoutCartIn):
         ])
 
         cart_items.delete()
+
+    order = Order.objects \
+        .prefetch_related('ordereditem_set', 'ordereditem_set__book') \
+        .get(id=order.id)
 
     return order
