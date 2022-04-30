@@ -7,7 +7,7 @@ from ninja import Router
 
 from .models import Cart
 from books.models import Book
-from orders.models import PaymentType, Order, OrderedItem
+from orders.models import PaymentTypeChoices, Order, OrderedItem
 
 from .schemas import CartIn, CartOut, DeleteCartIn, CheckoutCartIn, CheckoutCartOut
 
@@ -33,10 +33,8 @@ def put_cart(request, payload: CartIn):
     if payload.amount <= 0:
         raise APIException(message='amount can not le 0')
 
-    book = get_object_or_404(Book, id=payload.book_id)
-
-    with cache.lock(f'cart_book_{book.id}'):
-        book.refresh_from_db()
+    with cache.lock(f'cart_book_{payload.book_id}'):
+        book = get_object_or_404(Book, id=payload.book_id)
 
         if book.stock < payload.amount:
             raise APIException(message='stock not enough')
@@ -79,17 +77,15 @@ def delete_cart(request, payload: DeleteCartIn):
 def checkout_cart(request, payload: CheckoutCartIn):
     user_id = request.auth['user_id']
 
-    payment_type = vars(PaymentType).get(payload.payment_type)
-
-    if payment_type is None:
+    if payload.payment_type not in PaymentTypeChoices.names:
         raise APIException(message=f'unsupport payment type {payload.payment_type}')
 
     with transaction.atomic():
-        cart_items = Cart.objects.filter(user_id=user_id).all()
+        cart_items = Cart.objects.select_related('book').filter(user_id=user_id).all()
 
         order = Order.objects.create(
             user_id=user_id,
-            payment_type=payment_type,
+            payment_type=PaymentTypeChoices[payload.payment_type],
             total_price=sum([cart_item.unit_price * cart_item.amount for cart_item in cart_items]),
         )
 
@@ -103,5 +99,9 @@ def checkout_cart(request, payload: CheckoutCartIn):
         ])
 
         cart_items.delete()
+
+    order = Order.objects \
+        .prefetch_related('ordereditem_set', 'ordereditem_set__book') \
+        .get(id=order.id)
 
     return order
